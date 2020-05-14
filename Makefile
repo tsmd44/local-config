@@ -14,9 +14,6 @@ clean-image:
 clean-job:
 	kubectl delete jobs $(shell kubectl get jobs -o jsonpath="{.items[?(@.status.succeeded==1)].metadata.name}")
 
-.PHONY: install
-install: init-cluster install-metrics-server install-mysql install-postgres install-redis install-mailhog install-minio install-elasticsearch install-jaeger install-prometheus install-thanos install-grafana install-promtail install-loki install-kibana install-ingress
-
 .PHONY: init-cluster
 init-cluster:
 	kubectl apply -f $(BASE_DIR)/namespaces.yaml
@@ -50,7 +47,10 @@ install-mysql:
 .PHONY: install-postgres
 install-postgres:
 	$(eval namespace := ds)
-	helm upgrade -i postgres --namespace $(namespace) -f charts/postgres/values.yaml stable/postgresql --wait
+	helm upgrade -i postgres bitnami/postgresql \
+		--namespace $(namespace) \
+		-f charts/postgres/values.yaml \
+		--wait
 
 .PHONY: install-redis
 install-redis:
