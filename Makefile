@@ -1,21 +1,22 @@
 SHELL=/bin/bash
 
 BASE_DIR := manifests
+CLUSTER = $(shell kind get clusters)
 
-.PHONY: clean
-clean: clean-image clean-jop
 
-.PHONY: clean-image
-clean-image:
-	docker container prune -f
-	docker image prune -a
-
-.PHONY: clean-jop
-clean-job:
-	kubectl delete jobs $(shell kubectl get jobs -o jsonpath="{.items[?(@.status.succeeded==1)].metadata.name}")
+.PHONY: cluster
+ifeq ($(CLUSTER),kind)
+cluster:
+	$(MAKE) init-cluster
+else
+cluster:
+	kind create cluster --config=cluster/config.yaml
+	$(MAKE) init-cluster
+endif
 
 .PHONY: init-cluster
 init-cluster:
+	docker-compose up -d
 	kubectl apply -f $(BASE_DIR)/namespaces.yaml
 	helm repo add stable https://kubernetes-charts.storage.googleapis.com
 	helm repo add codecentric https://codecentric.github.io/helm-charts
@@ -25,6 +26,7 @@ init-cluster:
 	helm repo add elastic https://helm.elastic.co
 	helm repo add jupyterhub https://jupyterhub.github.io/helm-chart/
 	helm repo add banzaicloud https://kubernetes-charts.banzaicloud.com
+	helm repo add strimzi https://strimzi.io/charts/
 	helm repo update
 
 .PHONY: install-metrics-server
@@ -39,9 +41,9 @@ install-metrics-server:
 .PHONY: install-mysql
 install-mysql:
 	$(eval namespace := ds)
-	helm dependency update --skip-refresh charts/mysql
-	helm upgrade -i mysql --namespace $(namespace) charts/mysql \
-		--set hostPath="$(HOME)/.docker/Volumes/mysql" \
+	helm upgrade -i mysql stable/mysql \
+		--namespace $(namespace) \
+		-f charts/mysql/values.yaml \
 		--wait
 
 .PHONY: install-postgres
@@ -132,3 +134,7 @@ install-thanos:
 		-f charts/thanos/values.yaml \
 		--version=0.3.18 \
 		--wait
+
+.PHONY: clean-jop
+clean-job:
+	kubectl delete jobs $(shell kubectl get jobs -o jsonpath="{.items[?(@.status.succeeded==1)].metadata.name}")

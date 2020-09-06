@@ -1,0 +1,24 @@
+version: "3.8"
+
+services:
+  kind-proxy-mysql:
+    container_name: kind-proxy-mysql
+    image: alpine/socat
+    networks:
+      - kind
+    ports:
+      - "3306:3306"
+    command: "-dd tcp-listen:3306,fork,reuseaddr tcp-connect:target:30036"
+  kind-proxy-postgres:
+    container_name: kind-proxy-postgres
+    image: alpine/socat
+    networks:
+      - kind
+    ports:
+      - "5432:5432"
+    command: "-dd tcp-listen:5432,fork,reuseaddr tcp-connect:target:30054"
+
+networks:
+  kind:
+    external: true
+    name: kind

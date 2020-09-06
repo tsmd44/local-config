@@ -1,6 +1,0 @@
-dependencies:
-- name: mysql
-  repository: https://kubernetes-charts.storage.googleapis.com
-  version: 1.6.3
-digest: sha256:8d40f9c84eed5b618e0f45ae410f56224cbd735152d6e50ed6860b1fde4497c5
-generated: "2020-04-27T16:00:47.305535+09:00"
