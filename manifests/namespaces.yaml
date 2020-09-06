@@ -18,3 +18,10 @@ metadata:
   name: ds
   labels:
     name: ds
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: kafka
+  labels:
+    name: kafka

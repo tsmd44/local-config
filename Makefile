@@ -135,6 +135,20 @@ install-thanos:
 		--version=0.3.18 \
 		--wait
 
+.PHONY: install-kafka-operator
+install-kafka-operator:
+	$(eval namespace := kafka)
+	helm upgrade -i kafka strimzi/strimzi-kafka-operator \
+		--namespace $(namespace) \
+		-f charts/kafka-operator/values.yaml \
+		--version=0.18.0 \
+		--wait
+
+.PHONY: install-kafka
+install-kafka:
+	$(eval namespace := kafka)
+	kubectl apply -f manifests/kafka --namespace $(namespace)
+
 .PHONY: clean-jop
 clean-job:
 	kubectl delete jobs $(shell kubectl get jobs -o jsonpath="{.items[?(@.status.succeeded==1)].metadata.name}")
